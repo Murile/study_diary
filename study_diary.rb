@@ -99,18 +99,18 @@ class StudyApp
   end
 
   def search_category
-    print "Digite uma categoria para a busca: "
-    key = gets.chomp.downcase()
     
-    search_category = @items.select do |item|
-      item.category.name.downcase.include?(key)
-    end
+    print_categories
+    print "Escolha uma categoria para a busca: "
+    category_item = gets.chomp.to_i - 1
+    
+   categoria = @categories[category_item].itens 
 
-    if search_category.empty?
-      puts "Não foram encontrados itens com a palavra-chave '#{key}'"
+    if categoria.empty?
+      puts "Não foram encontrados itens com a palavra-chave"
     else
       puts "Itens encontrados:"
-      search_category.each do |item|
+      categoria.each do |item|
         puts "#{item.category.name} - #{item.title}"
       end
     end
