@@ -1,0 +1,32 @@
+puts '== Instalando dependências =='
+system 'gem install bundler --conservative'
+system('bundle check') || system('bundle install')
+
+require 'sqlite3'
+
+puts "\n== Preparando banco de dados =="
+begin
+    db = SQLite3::Database.new('mydatabase.db')
+  db.execute <<~SQL
+    CREATE TABLE CATEGORY(
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        NAME VARCHAR(100) NOT NULL
+    );
+  SQL
+
+  db = SQLite3::Database.new('mydatabase.db')
+  db.execute <<~SQL
+    CREATE TABLE TB_DIARY_STUDY (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        ID_CATEGORY INTEGER NOT NULL,
+        ITEM TEXT NOT NULL,
+    
+        FOREIGN KEY (ID_CATEGORY) REFERENCES  CATEGORY (ID)  
+    );
+  SQL
+
+rescue SQLite3::Exception => e
+  puts e
+ensure
+  db.close if db
+end

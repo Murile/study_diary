@@ -1,5 +1,6 @@
 require_relative 'category'
 require_relative 'study_item'
+require 'sqlite3'
 
 class StudyApp
   def initialize
@@ -53,10 +54,9 @@ class StudyApp
     print_categories
     print "Escolha a categoria:"
     category_item = gets.chomp.to_i - 1
-    category = @categories[category_item]
-
-    item = StudyItem.new(title, category)
-    @items << item
+    db = SQLite3::Database.open "db/database.db"
+    db.execute "INSERT INTO TB_DIARY_STUDY VALUES('#{ title }', '#{ category_item }')"
+    db.close
 
     puts "Item criado com sucesso: #{item.title} (#{item.category.name})"
   end
@@ -64,19 +64,20 @@ class StudyApp
   def add_category
     print "Digite uma categoria:"
     title_category = gets.chomp.to_s
-    category = Category.new(title_category, @item)
-    @categories << category
+    db = SQLite3::Database.open "db/database.db"
+    db.execute "INSERT INTO CATEGORY VALUES('#{ title_category }')"
+    db.close
+
 
     puts "Categoria criado com sucesso: #{category.name}"
   end
 
   def list_items
-    if @items.empty?
-      puts "Não há itens cadastrados!"
-    else
-      @items.each do |item|
-        puts "#{item.title} - #{item.category.name}"
-      end
+    db = SQLite3::Database.open "db/database.db"
+    db.results_as_hash = true
+    tasks = db.execute "SELECT * FROM TB_DIARY_STUDY"
+    db.close
+   
     end
   end
 
@@ -84,9 +85,11 @@ class StudyApp
     print "Digite uma palavra-chave para buscar: "
     key = gets.chomp.downcase()
     
-    search_items = @items.select do |item|
-      item.title.downcase.include?(key)
-    end
+    db = SQLite3::Database.open "db/database.db"
+    db.results_as_hash = true
+    tasks = db.execute "SELECT * FROM TB_DIARY_STUDY where ITEM like '#{key}'"
+    db.close
+   
 
     if search_items.empty?
       puts "Não foram encontrados itens com a palavra-chave '#{key}'"
@@ -104,13 +107,13 @@ class StudyApp
     print "Escolha uma categoria para a busca: "
     category_item = gets.chomp.to_i - 1
     
-   categoria = @categories[category_item].itens 
+   itens = @categories[category_item].itens 
 
-    if categoria.empty?
+    if itens.nil?
       puts "Não foram encontrados itens com a palavra-chave"
     else
       puts "Itens encontrados:"
-      categoria.each do |item|
+      itens.each do |item|
         puts "#{item.category.name} - #{item.title}"
       end
     end
@@ -121,6 +124,7 @@ class StudyApp
       puts "#{index + 1}. #{category.name}"
     end
   end
+
 end
 
 app = StudyApp.new
