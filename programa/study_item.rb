@@ -6,3 +6,4 @@ class StudyItem
       @category = category
     end
 end
+
