@@ -1,4 +1,6 @@
 require 'sqlite3'
+require_relative './programa/category'
+require_relative './programa/study_item'
 
 class StudyApp
   def initialize
@@ -38,13 +40,11 @@ class StudyApp
     print "Digite o título do item: "
     title = gets.chomp
 
-    db = SQLite3::Database.new("./mydatabase.db")
-    db.execute("PRAGMA foreign_keys = ON")
-    categories = db.execute("SELECT * FROM CATEGORY")
-    db.close
+    category = Category.new
+    result = category.all
 
-    print_categories(categories)
-
+    print_categories(result)
+    
     print "Escolha a categoria: "
     category_item = gets.chomp.to_i
 
@@ -67,13 +67,10 @@ class StudyApp
   end
 
   def list_items
-    db = SQLite3::Database.new("./mydatabase.db")
-    items = db.execute("SELECT  TB_DIARY_STUDY.ITEM,
-      CATEGORY.NAME
-      FROM 	TB_DIARY_STUDY
-  inner join CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID) ")
-    db.close
 
+    study_item = StudyItem.new
+    items = study_item.all
+  
     if items.empty?
       puts "Não há itens cadastrados!"
     else
@@ -106,12 +103,11 @@ class StudyApp
   end
 
   def search_category
-    db = SQLite3::Database.new("./mydatabase.db")
-    db.execute("PRAGMA foreign_keys = ON")
-    categories = db.execute("SELECT * FROM CATEGORY")
-    db.close
+   
+    category = Category.new
+    result = category.all
 
-    print_categories(categories)
+    print_categories(result)
     
     print "Escolha uma categoria para a busca: "
     category_item = gets.chomp.to_i
