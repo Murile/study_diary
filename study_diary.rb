@@ -3,6 +3,7 @@ require_relative './programa/category'
 require_relative './programa/study_item'
 
 class StudyApp
+  
   def initialize
     loop do
       print_menu
@@ -40,8 +41,7 @@ class StudyApp
     print "Digite o título do item: "
     title = gets.chomp
 
-    category = Category.new
-    result = category.all
+    result = Category.all
 
     print_categories(result)
     
@@ -67,9 +67,7 @@ class StudyApp
   end
 
   def list_items
-
-    study_item = StudyItem.new
-    items = study_item.all
+    items = StudyItem.all
   
     if items.empty?
       puts "Não há itens cadastrados!"
@@ -103,9 +101,7 @@ class StudyApp
   end
 
   def search_category
-   
-    category = Category.new
-    result = category.all
+    result = Category.all
 
     print_categories(result)
     

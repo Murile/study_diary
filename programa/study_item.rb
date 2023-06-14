@@ -1,6 +1,13 @@
 class StudyItem
-  
-    def all
+
+  attr_reader :title, :category
+
+    def initialize(title, category)
+      @title = title
+      @category = category
+    end
+
+    def self.all
       db  =SQLite3::Database.new("./mydatabase.db")
       items = db.execute("SELECT  TB_DIARY_STUDY.ITEM,
       CATEGORY.NAME
@@ -12,7 +19,7 @@ class StudyItem
       items
     end
 
-    def find_by(id)
+    def self.find_by(id)
       print "Digite um id para a busca: "
       id = gets.chomp.to_i
   

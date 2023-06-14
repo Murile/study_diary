@@ -1,6 +1,13 @@
 class Category
+
+  attr_reader :name, :itens
+
+  def initialize(name, itens)
+    @name = name
+    @itens = itens
+  end
   
-  def all
+  def self.all
     db = SQLite3::Database.new("./mydatabase.db")
     db.execute("PRAGMA foreign_keys = ON")
     categories = db.execute("SELECT * FROM CATEGORY")
@@ -9,7 +16,7 @@ class Category
     categories
   end
 
-  def find_by(id)
+  def self.find_by(id)
     print "Digite um id para a busca: "
     id = gets.chomp.to_i
 
