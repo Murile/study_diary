@@ -49,7 +49,7 @@ class StudyApp
     category_item = gets.chomp.to_i
 
     db = SQLite3::Database.open("./mydatabase.db")
-    db.execute("INSERT INTO TB_DIARY_STUDY (ID_CATEGORY, ITEM) VALUES (?, ?)", [category_item, title])
+    db.execute("INSERT INTO TB_DIARY_STUDY (ID_CATEGORY, ITEM, ACCESS_COUNT) VALUES (?, ?, 0)", [category_item, title])
     db.close
 
     puts "Item criado com sucesso!"
@@ -83,11 +83,12 @@ class StudyApp
     key = gets.chomp
 
     db = SQLite3::Database.new("./mydatabase.db")
-    items = db.execute("SELECT  TB_DIARY_STUDY.ITEM,
-      CATEGORY.NAME
-      FROM 	TB_DIARY_STUDY
-  inner join CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID)
-  WHERE ITEM LIKE ?", ["%#{key}%"])
+    items = db.execute("SELECT TB_DIARY_STUDY.ID, 
+      TB_DIARY_STUDY.ITEM, 
+      CATEGORY.NAME, TB_DIARY_STUDY.ACCESS_COUNT
+      FROM TB_DIARY_STUDY
+      INNER JOIN CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID)
+      WHERE ITEM LIKE ?", ["%#{key}%"])
     db.close
 
     if items.empty?
@@ -95,7 +96,8 @@ class StudyApp
     else
       puts "Itens encontrados:"
       items.each do |item|
-        puts "#{item[1]} - #{item[0]}"
+        puts "#{item[1]} - #{item[2]}"
+        increment_access_count(item[0])
       end
     end
   end
@@ -131,6 +133,14 @@ class StudyApp
       puts "#{index + 1}. #{category[1]}"
     end
   end
+
+  def increment_access_count(item_id)
+    db = SQLite3::Database.new("./mydatabase.db")
+    db.execute("UPDATE TB_DIARY_STUDY SET 
+      ACCESS_COUNT = ACCESS_COUNT + 1 WHERE ID = ?", [item_id])
+    db.close
+  end
+
 end
 
 app = StudyApp.new

@@ -14,16 +14,21 @@ begin
     );
   SQL
 
+DROP TABLE TB_DIARY_STUDY;
+
   db = SQLite3::Database.new('mydatabase.db')
   db.execute <<~SQL
     CREATE TABLE TB_DIARY_STUDY (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         ID_CATEGORY INTEGER NOT NULL,
         ITEM TEXT NOT NULL,
+        ACCESS_COUNT INTEGER NOT NULL,
     
         FOREIGN KEY (ID_CATEGORY) REFERENCES  CATEGORY (ID)  
     );
   SQL
+
+  SELECT * FROM TB_DIARY_STUDY;
 
 rescue SQLite3::Exception => e
   puts e
