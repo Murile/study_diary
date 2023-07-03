@@ -79,52 +79,71 @@ class StudyApp
   end
 
   def search_items
+    print_suggested_items
+
     print "Digite uma palavra-chave para buscar: "
     key = gets.chomp
 
-    db = SQLite3::Database.new("./mydatabase.db")
-    items = db.execute("SELECT TB_DIARY_STUDY.ID, 
-      TB_DIARY_STUDY.ITEM, 
-      CATEGORY.NAME, TB_DIARY_STUDY.ACCESS_COUNT
-      FROM TB_DIARY_STUDY
-      INNER JOIN CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID)
-      WHERE ITEM LIKE ?", ["%#{key}%"])
-    db.close
+    items = StudyItem.find_itens(key)
 
     if items.empty?
       puts "Não foram encontrados itens com a palavra-chave '#{key}'"
     else
-      puts "Itens encontrados:"
+      puts "Item encontrado:"
       items.each do |item|
-        puts "#{item[1]} - #{item[2]}"
-        increment_access_count(item[0])
+        puts "#{item[1]} - #{item[2]} - Qtd. de acessos: #{item[3]}"
+        StudyItem.increment_access_count(item[0])
       end
     end
   end
 
   def search_category
-    result = Category.all
 
-    print_categories(result)
+    full = Category.all
+    print_categories_with_access_count(full)
     
     print "Escolha uma categoria para a busca: "
     category_item = gets.chomp.to_i
 
-    db = SQLite3::Database.new("./mydatabase.db")
-    items = db.execute("SELECT  TB_DIARY_STUDY.ITEM,
-      CATEGORY.NAME
-      FROM 	TB_DIARY_STUDY
-  inner join CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID) 
-  WHERE ID_CATEGORY = ?", [category_item])
-    db.close
+    result = Category.find_by(category_item)
 
-    if items.empty?
+    if result.empty?
       puts "Não foram encontrados itens com a categoria selecionada."
     else
       puts "Itens encontrados:"
-      items.each do |item|
+      result.each do |item|
         puts "#{item[1]} - #{item[0]}"
       end
+    end
+  end
+
+  def print_suggested_items
+    db = SQLite3::Database.new("./mydatabase.db")
+    suggested_items = db.execute("SELECT TB_DIARY_STUDY.ID,
+      TB_DIARY_STUDY.ITEM,
+      CATEGORY.NAME,
+      TB_DIARY_STUDY.ACCESS_COUNT
+      FROM TB_DIARY_STUDY
+      INNER JOIN CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID)
+      WHERE TB_DIARY_STUDY.ACCESS_COUNT > 0
+      ORDER BY TB_DIARY_STUDY.ACCESS_COUNT DESC
+      LIMIT 3")
+    db.close
+
+    if suggested_items.empty?
+      puts "Não há itens sugeridos no momento."
+    else
+      puts "Sugestões de itens mais acessados:"
+      suggested_items.each do |item|
+        puts "#{item[1]} - #{item[2]} - Qtd.acessos: #{item[3]}"
+      end
+    end
+  end
+
+  def print_categories_with_access_count(categories)
+    categories.each do |category|
+      count = Category.total_access_count(category[0])
+      puts "#{category[1]} (Total de Acessos: #{count})"
     end
   end
 
@@ -132,13 +151,6 @@ class StudyApp
     categories.each_with_index do |category, index|
       puts "#{index + 1}. #{category[1]}"
     end
-  end
-
-  def increment_access_count(item_id)
-    db = SQLite3::Database.new("./mydatabase.db")
-    db.execute("UPDATE TB_DIARY_STUDY SET 
-      ACCESS_COUNT = ACCESS_COUNT + 1 WHERE ID = ?", [item_id])
-    db.close
   end
 
 end

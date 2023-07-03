@@ -31,5 +31,26 @@ class StudyItem
                         WHERE TB_DIARY_STUDY.ID = ?", [id])
       db.close
       end
+
+      def self.increment_access_count(item_id)
+        db = SQLite3::Database.new("./mydatabase.db")
+        acess = db.execute("UPDATE TB_DIARY_STUDY SET 
+          ACCESS_COUNT = ACCESS_COUNT + 1 WHERE ID = ?", [item_id])
+        db.close
+      end
+
+      def self.find_itens(key)
+        db = SQLite3::Database.new("./mydatabase.db")
+        items = db.execute("SELECT TB_DIARY_STUDY.ID, 
+        TB_DIARY_STUDY.ITEM, 
+        CATEGORY.NAME, 
+        TB_DIARY_STUDY.ACCESS_COUNT
+        FROM TB_DIARY_STUDY
+        INNER JOIN CATEGORY ON (TB_DIARY_STUDY.ID_CATEGORY = CATEGORY.ID)
+        WHERE ITEM LIKE ?", ["%#{key}%"])
+        db.close 
+
+        items
+      end
 end
 
